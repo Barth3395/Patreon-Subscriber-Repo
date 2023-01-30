@@ -1,0 +1,23 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastDT",0))
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to do too much!" -f "Cooldown|This server has a cooldown on downtime activities! You can do this again at <t:{last_used+cooldown}:t>." -footer "To see or edit the cooldown, check the cooldown svar." """
+  else:
+   character().set_cvar("LastDT",int(time()))
+   a,pc=argparse(&ARGS&), character()
+   rollstring = ["1d20", "2d20kh1", "2d20kl1"][a.adv()]
+   adv = a.adv(boolwise=True)
+   reroll_number = pc.csettings.get("reroll", None)
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '')
+   tr=vroll(rollstring+f"+{dexterityMod}"+(f"+{proficiencyBonus*2} [expertise]" if "&1&" in get("eTools","").lower() else f"+{proficiencyBonus} [proficient]" if "&1&" in get("pTools","").lower() else "")+bonus)
+   c1=vroll(pc.skills.performance.d20(adv, reroll_number)+bonus)
+   c2=vroll(pc.skills.persuasion.d20(adv, reroll_number)+bonus)
+   previous = DTime
+   workWeek = int(86400)
+   pc.set_cvar("DTime", int(DTime) - workWeek)
+   earnings = (tr.total + c1.total + c2.total)
+   gpmultiplier = int(get_svar("gpmultiplier",1))
+   amount= int(earnings) * gpmultiplier
+   return f"""embed -title "{name} spends 1 day performing!" -desc "Whether on a stage or a street, performing for tips is a good way for a bard or otherwise to make a few coins to catch the next carriage out of town." -f "Instrument (&1&)|{tr}" -f "Performance Check|{c1}" -f "Persuasion Check|{c2}" -f "Coins({"+" if amount >= 0 else ""}{amount})|{character().coinpurse.compact_str()}" -footer "Downtime | Current: {DTime} Previous: {previous} Multiplier: x{gpmultiplier}" """
+</drac2>
