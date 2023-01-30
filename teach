@@ -1,0 +1,25 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastDT",0))
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to do too much!" -f "Cooldown|This server has a cooldown on downtime activities! You can do this again at <t:{last_used+cooldown}:t>." -footer "To see or edit the cooldown, check the cooldown svar." """
+  else:
+   character().set_cvar("LastDT",int(time()))
+   a,pc=argparse(&ARGS&), character()
+   skill = ([x for x,y in pc.skills if '&1&'.lower().replace(' ','') in x.lower()]+['arcana'])[0]
+   rollstring = ["1d20", "2d20kh1", "2d20kl1"][a.adv()]
+   adv = a.adv(boolwise=True)
+   reroll_number = pc.csettings.get("reroll", None)
+   minimum_check = a.last('mc', None, int) or (10 if pc.csettings.get("talent", False) and pc.skills[skill].prof else None)
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '')
+   c=vroll(pc.skills[skill].d20(adv, reroll_number, minimum_check)+bonus)
+   dc=vroll("2d10+5")
+   oneDay = int(432000)
+   previous = DTime
+   pc.set_cvar("DTime", int(DTime) - oneDay)
+   gpmultiplier = int(get_svar("gpmultiplier",1)) 
+   amount=int(c.total) * proficiencyBonus * gpmultiplier if c.total >= dc.total else 0
+   pc.coinpurse.modify_coins(gp=amount)
+   result = character().coinpurse.compact_str() if c.total >= dc.total else 'You failed in your teaching and lose your earnings.'
+   return f"""embed -title "{name} spends 5 days teaching!" -desc "Whether tutoring for private lessons or teaching in a school, a civilazation of any sort needs to pass along knowledge to continue." -f "Skill Check ({skill})|{c}" -f "DC|{dc}" -f "Result| {result}{"+ {amount}" if c.total > dc.total else ''} -footer "Downtime|Current: {DTime} Previous: {previous} Multiplier: x{gpmultiplier}" """
+</drac2>
