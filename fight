@@ -1,0 +1,21 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastDT",0))
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to do too much!" -f "Cooldown|This server has a cooldown on downtime activities! You can do this again at <t:{last_used+cooldown}:t>." -footer "To see or edit the cooldown, check the cooldown svar." """
+  else:
+   character().set_cvar("LastDT",int(time()))
+   a,pc=argparse(&ARGS&), character()
+   adv = a.adv(boolwise=True)
+   rollstring = ["1d100", "2d100kh1", "2d100kl1"][a.adv()]
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '')
+   r=vroll(rollstring+(f"+{level} [Level]")+bonus)
+   table={5:"You are jailed for 3d6 days at the end of the downtime period on charges of massive property damage/theft, implied assault, disorderly conduct, and disturbing the peace. You are also fined a total of 300 gp.",15:"You are jailed for 1d4 days at the end of the downtime period on charges of disorderly conduct and disturbing the peace. You are also fined a total of 10 gp.",20:"You regain consciousness in a strange place with no memory of how you got there. You aren't missing anything but you seem to have been the victim of several magic spells and enchantments that create a real walk of shame as return home.",30:"You regain consciousness in a strange place with no memory of how you got there and you have been robbed of 3d6 × 5 gp.",40:"You manage to end up in a drunken fist fight against a local. Make a DC 13 strength check. On a success you recuperate your expenses. On a failure your expenses double for this day.",50:"The night goes well for you and you spend your evening with an interesting individual, according to your character's interests. Who this person is is up to you. You gain DM inspiration that may be used on any quest if you did not already have it.",80:"You earn modest winnings from gambling and recuperate your expenses for the time spent carousing.",90:"You earn modest winnings from gambling. You recuperate your expenses for the time spent carousing and gain 1d20 × 4 gp.",130:"You make a small fortune gambling. You recuperate your expenses for the time spent carousing and gain 4d6 × 10 gp. Your carousing becomes the stuff of local legend."} 
+   result=[table[x] for x in table if r.total >= x][-1]
+   workWeek = int(259200)
+   previous = DTime
+   pc.set_cvar("DTime", int(DTime) - workWeek)
+   amount= -30
+   pc.coinpurse.modify_coins(gp=amount)
+   return f"""embed -title "{name} spends 3 days carousing!" -desc "Drunken debauchery and merriment among adventurers is anything but rare, as life is hard and celebrations make it all better. It could be that you just saw a fellow adventurer get brutally mauled and nothing of their corpse remains, you could have found the lost city of Don Juan and are rich beyond your wildest dreams, or maybe you just wanna see what happens, regardless you're drinking, and doing so in copious amounts." -f "Roll |{r}" -f "Effect|{result}" -f "Coins({"+" if amount >= 0 else ""}{amount})|{character().coinpurse.compact_str()}" -footer "Downtime|Current: {DTime} Previous: {previous}" """
+</drac2>
