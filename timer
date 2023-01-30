@@ -1,0 +1,30 @@
+embed <drac2>
+A = "&1&" if "&*&" else ""
+pc=character()
+currT = int(time())
+pc.set_cvar_nx("LastTime", currT)
+pc.set_cvar_nx("DTime", "0")
+secondsCap = int(get_svar("timerCap",21))*86400
+turnOn     = A and (A in "on.return.true")
+turnOff    = (not turnOn) and ((A and (A in "retire.no.off.null.false")) or LastTime == "-1")
+manual     = int((float(A) if A and not (turnOff or turnOn) else float(A) if A and A not in "on.return.true.retire.no.off.null.false" else 0) * 60 * 60 * 24)
+secDelta   = (currT - int(LastTime)) if not (turnOff or turnOn) else 0
+minDelta   = (secDelta + manual) / 60
+hourDelta  = minDelta / 60
+dayDelta   = hourDelta / 24
+previous   = int(DTime)
+newDT      = min(secondsCap,previous+secDelta+manual) if get_svar("timerCap") else int(previous+secDelta+manual)
+pc.set_cvar("DTime",newDT) if manual or not turnOff else 0
+downtimeDays = int(DTime) / (60*60*24)
+diff       = newDT-previous
+diffPrint  = 'Timer Capped' if previous==secondsCap else (f'{(diff/86400):.2f} days' if dayDelta>1 else f'{(diff/3600):.2f} hours' if hourDelta>1 else f'{(diff/60):.2f} minutes' if minDelta>1 else f'{diff} seconds' if secDelta>1 else 'Character Retired' if turnOff else "None")
+</drac2>
+-title "Downtime Tracker: <name>"
+{{f'-f "Manual Adjustment | {(manual/(60*60*24)):.2f} days"' if manual else ''}}
+-f "Time Added | {{diffPrint}}"
+-f "Current Downtime | {{f'{downtimeDays:.2f}'}} days"
+{{pc.set_cvar("LastTime", currT if turnOn or not turnOff else -1)}}
+-desc "Use with `!timer [+|-]#` to add or remove # days.
+Use `!timer on` to begin accruing downtime."
+-footer "Current: {{DTime}} Previous: {{previous}}"
+-color <color> -thumb <image>
