@@ -1,0 +1,21 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastDT",0))
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to do too much!" -f "Cooldown|This server has a cooldown on downtime activities! You can do this again at <t:{last_used+cooldown}:t>." -footer "To see or edit the cooldown, check the cooldown svar." """
+  else:
+   character().set_cvar("LastDT",int(time()))
+   a,pc=argparse(&ARGS&), character()
+   skill = ([x for x,y in pc.skills if '&1&'.lower().replace(' ','') in x.lower()]+['religion'])[0]
+   adv = a.adv(boolwise=True)
+   reroll_number = pc.csettings.get("reroll", None)
+   minimum_check = a.last('mc', None, int) or (10 if pc.csettings.get("talent", False) and pc.skills[skill].prof else None)
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '0')
+   dieroll=vroll(pc.skills[skill].d20(adv, reroll_number, minimum_check)+(bonus if a.get('b') else ''))
+   table={5:"The Gods are silent. No effect.",10:"You may ask the temple for assistance dealing with a problem or for political / social support",15:"You receive DM inspiration. If you already have inspiration and this is a prequest activity you instead gain it at the end of the quest",20:"Blessing of Tongues, you have gained the honour of speaking your god's word. For the duration of your next quest your voice changes to be more like your gods and you are under the effect of the tongues spell.",90:"You may reduce the cost of any cleric spellcasting by 50 percent."} 
+   result=[table[x] for x in table if dieroll.total<=int(x)]
+   previous = DTime
+   workWeek = int(432000)
+   pc.set_cvar("DTime", int(DTime) - workWeek)
+   return f"""embed -title "{name} spends 5 days in worship!" -desc "Characters with a religious bent might wish to spend their downtime in service to a temple. This activity has the chance of winning the favor of the temple's leaders. " -f "Skill Check ({skill})|{dieroll}" -f "Effect|{result[0]}" -footer "Downtime | Current: {DTime} Previous: {previous}" """
+</drac2>
