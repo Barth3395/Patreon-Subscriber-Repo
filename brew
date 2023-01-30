@@ -1,0 +1,24 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastDT",0))
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to do too much!" -f "Cooldown|This server has a cooldown on downtime activities! You can do this again at <t:{last_used+cooldown}:t>." -footer "To see or edit the cooldown, check the cooldown svar." """
+  else:
+   character().set_cvar("LastDT",int(time()))
+   a,pc=argparse(&ARGS&), character()
+   rollstring = ["1d20", "2d20kh1", "2d20kl1"][a.adv()]
+   adv = a.adv(boolwise=True)
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '')
+   dc=int("&1&")
+   amount= -100 if dc >= 14 else -60 if dc >= 12 else -60 if dc >= 10 else -30 if dc >= 8 else -40 if dc == 7 else -50 if dc == 6 else -35 if dc == 5 else -25 if dc >= 1 else 0
+   tr=vroll(rollstring+f"+{intelligenceMod}"+(f"+{proficiencyBonus*2} [expertise]" if "brewer" in get("eTools","").lower() else f"+{proficiencyBonus} [proficient]"  if "brewer" in get("pTools","").lower() else "")+bonus)
+   table={4:"Dud Brew, Worth 50gp: You didn't create something amazing but it's still beer. Allies gain a number of temporary hit points at the end of the rest equal to your tool proficiency bonus.",5:"Druidcraft Beer, Your beer creates a harmless sensory effect that seems to follow you around after you drink it. Effects such as falling leaves, a puff of wind, the sound of a small animal, or the faint odor of skunk. The brewer chooses what the effect upon creation. The effect lasts for 1 hour or until the drinker chooses to end it.",6:"The Good Stuff, A basic tasty beer. Allies gain temporary hp equal to half your level (rounded up) plus your skill proficiency bonus.",7:"Glowglass, A gnomish grew made from glowing mushrooms. Players who drink this shed light like a candle for 1d4 hours.",8:"The Secret Ingredient, You create a nasty concoction with a nasty secret ingredient that doesn't actually taste half bad. Once drunk, anyone who knows the ingredients of the beer can use their action to inform the others of the ingredients. Anyone who heard this may use their reaction to cast Acid Splash with a range of 10 ft (the character expels the drink). Each ally may only do this once and only after hearing the ingredients.",10:"Clockwhistles Surprise, An okay tasting drink that is popular purely for the fun of it. The imbiber may choose to roll on Wild Magic table upon failing an attack roll or receiving damage, rerolling for effects that directly harm any creature or player. The DM can also decide what happens. The effect can not be affected by features granted to Wild Magic Sorcerers.",12:"Milligan's Deep Stout, A dark dwarven ale. Grants advantage on saving throws against the fear effect for 1d4 hours.",14:"Dragon's Breath, You create a beverage with a distinct flavour. Each ally that drinks the beer gains a single-use breath attack that must be used before the next rest. You can choose one of the following 'flavours' for your beer: Acid, Lightning, Poison, Fire, or Cold."} 
+   result=[table[x] for x in table if dc >= x][-1]
+   s=0
+   s += (1 if tr.total >= dc else 0)
+   workWeek = int(259200)
+   previous = DTime
+   pc.set_cvar("DTime", int(DTime) - workWeek)
+   pc.coinpurse.modify_coins(gp=amount)
+   return f"""embed -title "{name} spends 3 days brewing a keg of beer!" -desc "Each beer has a different effect on you and your allies at the end of a short rest." -f "Brewers Supplies Check|DC{dc}:{tr}" -f "Attempted Keg|{result}" -f "Result|{["The brew fails and you end up with a Dud Brew! You didn't create something amazing but it's still beer. Allies gain a number of temporary hit points at the end of the rest equal to your tool proficiency bonus.","You succeed in your brew! Gain the desired keg."][s]}" -f "Coins({"+" if amount >= 0 else ""}{amount}gp)|{character().coinpurse.compact_str()}" -footer "Downtime | Current: {DTime} Previous: {previous}" -color <color> -thumb <image>"""
+</drac2>
