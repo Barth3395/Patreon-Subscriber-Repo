@@ -1,0 +1,45 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastDT",0))
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to do too much!" -f "Cooldown|This server has a cooldown on downtime activities! You can do this again at <t:{last_used+cooldown}:t>." -footer "To see or edit the cooldown, check the cooldown svar." """
+  else:
+   character().set_cvar("LastDT",int(time()))
+   a,pc=argparse(&ARGS&), character()
+   skill = ([x for x,y in pc.skills if '&1&'.lower().replace(' ','') in x.lower()]+['athletics'])[0]
+   rollstring = ["1d20", "2d20kh1", "2d20kl1"][a.adv()]
+   adv = a.adv(boolwise=True)
+   reroll_number = pc.csettings.get("reroll", None)
+   minimum_check = a.last('mc', None, int) or (10 if pc.csettings.get("talent", False) and pc.skills[skill].prof else None)
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '')
+   c=vroll(pc.skills[skill].d20(adv, reroll_number, minimum_check)+bonus)
+   rollstring2 = ["1d100", "2d100kh1", "2d100kl1"][a.adv()]  
+   table={10:"You were brutally attacked while mining and lose a additional DT day.",50:"Stone! That was pretty much guaranteed",80:"You find some Metal! It's actually worth something!",96:"You found some gems! Wow, how lucky!",100:"A rare creature is spotted! It might want to fight you..."}
+   dieroll=vroll(rollstring2)
+   result=[table[x] for x in table if dieroll.total<=int(x)]
+   s = 0
+   s += (1 if c.total >= 8 else 0)
+   s += (1 if c.total >= 10 else 0)
+   sc = 0
+   sc += (1 if dieroll.total >= 9 else 0)
+   sc += (1 if dieroll.total >= 50 else 0)
+   sc += (1 if dieroll.total >= 80 else 0)
+   sc += (1 if dieroll.total >= 96 else 0)
+   sc += (1 if dieroll.total >= 100 else 0)
+   oneDay = int(86400)
+   previous = DTime
+   pc.set_cvar("DTime", int(DTime) - oneDay)
+   injury = f'''-f "Result|{["You have injured yourself and lose a additional downtime day.","You don't find anything","You successfully mine something!"][s]}" '''
+   found = f'''-f "Type|{result[0]}" ''' if s >= 2 else ''
+   metaltable = {10:"10 lbs of Copper, worth 5sp",20:"10 lbs. of copper, worth 1gp",35:"50 lbs. of iron, worth 5gp",50:"100 lbs. of iron, worth 10gp",65:"20 lbs. of silver, worth 100gp",75:"40 lbs. of silver, worth 200gp",85:"2 lbs. of gold, worth 100gp",92:"4 lbs. of gold, worth 200gp",98:"1 lb. of platinum, worth 500gp",99:"2 lbs. of platinum, worth 1000gp",100:"3 lbs. of platinum, worth 1500gp"}
+   mdieroll = vroll(f"1d100")
+   metalresult = [metaltable[x] for x in metaltable if mdieroll.total<=int(x)][0]
+   stonetable = {20:"10 lbs. of salt, worth 5sp",35:"30 lbs. of salt, worth 15sp",45:"50 lbs. of clay, worth 10gp",50:"100 lbs. of clay, worth 20gp.",65:"150. lbs of stone, worth 30gp",80:"300 lbs. of stone, worth 60gp",85:"100 lbs. of glass, worth 50gp",90:"300 lbs. of glass, worth 150gp",95:"500 lbs. of glass, worth 250gp",100:"1000 lbs. of glass, worth 500gp"}
+   sdieroll = vroll(f"1d100")
+   stresult = [stonetable[x] for x in stonetable if sdieroll.total<=int(x)][0]
+   gemtable = {7:"Quartz, worth 25gp",13:"Moonstone, worth 25gp",20:"Citrine, worth 25gp",26:"Jade, worth 50gp",34:"Amber, worth 50gp",40:"Amethyst, worth 50gp",46:"Garnet, worth 50gp",55:"Aquamarine, worth 250gp",64:"Peridot, worth 250gp",75:"Topaz, worth 250gp",80:"Blue Sapphire, worth 500gp",86:"Emerald, worth 500gp",93:"Black Opal, worth 500gp",99:"Fire Opal, worth 500gp",100:"Ruby, worth 2500gp"}
+   gdieroll = vroll(f"1d100")
+   gemresult = [gemtable[x] for x in gemtable if gdieroll.total<=int(x)][0]
+   earnings = f'''-f "{[f'Stone|{stresult}',f'Metal|{metalresult}',f'Gems|{gemresult}','Danger!|Rare Encounter!'][sc - 1]}" ''' if s >= 2 else 'You Black Out!|You were brutally attacked while mining and lose a additional DT day.'
+   return f"""embed -title "{name} spends 1 day mining!" -desc "The mines around the area are home to many different rare metals, stones, and gems. This alias allows the user to choose either the gold value or the found item, so it will not automatically add either!" -f "Skill Check ({skill})|{c}" {injury} {found} {earnings} -footer "Downtime|Current: {DTime} Previous: {previous}" """
+</drac2>
