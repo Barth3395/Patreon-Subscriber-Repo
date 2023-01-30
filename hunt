@@ -1,0 +1,21 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastDT",0))
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to do too much!" -f "Cooldown|This server has a cooldown on downtime activities! You can do this again at <t:{last_used+cooldown}:t>." -footer "To see or edit the cooldown, check the cooldown svar." """
+  else:
+   character().set_cvar("LastDT",int(time()))
+   a,pc=argparse(&ARGS&), character()
+   skill = ([x for x,y in pc.skills if '&1&'.lower().replace(' ','') in x.lower()]+['survival'])[0]
+   adv = a.adv(boolwise=True)
+   reroll_number = pc.csettings.get("reroll", None)
+   minimum_check = a.last('mc', None, int) or (10 if pc.csettings.get("talent", False) and pc.skills[skill].prof else None)
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '')
+   table={5:"Nothing is located.",9:"Locate a small beast. (Rabbits, squirrels, etc)",14:"Locate a medium beast (Boars, pigs, cows, worgs, etc)",20:"Locate a unique encounter (Goblins, kobolds, etc)",99:"Locate an exotic creature (T-Rex, dragon wyrmling, etc)"}
+   dieroll=vroll(pc.skills[skill].d20(adv, reroll_number, minimum_check)+(bonus if a.get('b') else ''))
+   result=[table[x] for x in table if dieroll.total >= x][-1]
+   workWeek = int(86400)
+   previous = DTime
+   pc.set_cvar("DTime", int(DTime) - workWeek)
+   return f"""embed -title "{name} spends 1 day hunting!" -desc "The forests and hills surrounding the area are home to all different sorts of wildlife. Characters with good tracking skills can quickly encounter beasts in the wild." -f "Skill Check ({skill})|{dieroll}" -f "Effect|{result}" -f "Resolution|When a hunt is successful, contact your DM to run the encounter. When/If you defeat the creature, you can decide to skin or harvest meat from it to collect your prize." -footer "Downtime|Current: {DTime} Previous: {previous}" """
+</drac2>
