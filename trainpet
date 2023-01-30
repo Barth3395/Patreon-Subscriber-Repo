@@ -1,0 +1,20 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastDT",0))
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to do too much!" -f "Cooldown|This server has a cooldown on downtime activities! You can do this again at <t:{last_used+cooldown}:t>." -footer "To see or edit the cooldown, check the cooldown svar." """
+  else:
+   a,pc=argparse(&ARGS&), character()
+   skill = ([x for x,y in pc.skills if '&2&'.lower().replace(' ','') in x.lower()]+['animalHandling'])[0]
+   adv = a.adv(boolwise=True)
+   reroll_number = pc.csettings.get("reroll", None)
+   minimum_check = a.last('mc', None, int) or (10 if pc.csettings.get("talent", False) and pc.skills[skill].prof else None)
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '')
+   dc=vroll("2d10+5")
+   c1=vroll(pc.skills[skill].d20(adv, reroll_number, minimum_check)+bonus)
+   pf="Success! The animal learns the %1% action!" if c1.total >= dc.total else "Failure! The time is wasted and the animal learns nothing..."
+   workWeek = int(259200)
+   previous = DTime
+   pc.set_cvar("DTime", int(DTime) - workWeek)
+   return f"""embed -title "{name} spends 3 days training their animal companion how to {'%1%'}!!" -desc "Training an animal companion typically means preparing them to fight." -f "DC|{dc}" -f "Roll ({skill}) | {c1}" -f "Result | {pf}" -color <color> -thumb <image> -footer "Downtime | Current: {DTime} Previous: {previous}" """
+</drac2>
