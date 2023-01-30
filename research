@@ -1,0 +1,25 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastResearch",0))
+
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to research oo much!" -f "Cooldown|You can do this again at <t:{last_used+cooldown}:t>." """
+  else:
+   character().set_cvar("LastResearch",int(time()))
+   a,pc=argparse(&ARGS&), character()
+   skill = ([x for x,y in pc.skills if '&2&'.lower().replace(' ','') in x.lower()]+['investigation'])[0]
+   adv = a.adv(boolwise=True)
+   reroll_number = pc.csettings.get("reroll", None)
+   minimum_check = a.last('mc', None, int) or (10 if pc.csettings.get("talent", False) and pc.skills[skill].prof else None)
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '')
+   bonus2 = ((&1&) - 50) / 100
+   table={5:"No effect.",10:"DM will only tell you something interesting. it’s on you to make it useful.",20:"DM will tell you something interesting and useful about the subject relevant to your situation.",25:"You may ask one follow up question.",30:"You may ask the DM 'What is the question I should be asking?' The DM will answer honesty"}
+   dieroll=vroll(pc.skills[skill].d20(adv, reroll_number, minimum_check)+("+"+int(bonus2) if a else '')+(bonus if a.get('b') else ''))
+   result=[table[x] for x in table if dieroll.total >= x][-1]
+   workWeek = int(86400)
+   previous = DTime
+   pc.set_cvar("DTime", int(DTime) - workWeek)
+   amount= -&1&
+   pc.coinpurse.modify_coins(gp=amount)
+   return f"""embed -title "Downtime Activity: !research" -f "Roll ({skill})|{dieroll}" -f "Effect|{result}" -f "Coins({"+" if amount >= 0 else ""}{amount})|{character().coinpurse.compact_str()}" -color <color> -thumb <image> -footer "downtime | Current: {DTime} Previous: {previous}" """
+</drac2>
