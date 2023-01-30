@@ -1,0 +1,21 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastDT",0))
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to do too much!" -f "Cooldown|This server has a cooldown on downtime activities! You can do this again at <t:{last_used+cooldown}:t>." -footer "To see or edit the cooldown, check the cooldown svar." """
+  else:
+   a,pc=argparse(&ARGS&), character()
+   adv = a.adv(boolwise=True)
+   STATS = ['con', 'str', 'dex', 'int', 'wis', 'cha']
+   mod = pc.stats.get_mod(a.last('stat')[:3]) if a.get('stat') and a.last('stat').lower()[:3] in STATS else dexterityMod
+   dc=int("&3&")
+   rollstring = ["1d20", "2d20kh1", "2d20kl1"][a.adv()]
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '')
+   tc = vroll(rollstring+f"+{mod}"+(f"+{proficiencyBonus*2} [expertise]" if "&4&" in get("eTools","").lower() else f"+{proficiencyBonus} [proficient]"  if "&4&" in get("pTools","").lower() else "")+bonus)
+   pf="Success! The &1& is crafted!" if tc.total >= dc else "Failure! The time is wasted and the item and materials break..."
+   oneDay = 86400
+   workWeek = int(oneDay * &2&)
+   previous = DTime
+   pc.set_cvar("DTime", int(DTime) - workWeek)
+   return f"""embed -title "{name} spends &2& days crafting a &1&!" -desc "Crafting an item requires a specific tool check and downtime, with the DC and amount of downtime determined by the rarity of the item." -f "DC|{dc}" -f "Roll (&4&) | {tc}" -f "Result | {pf}" -color <color> -thumb <image> -footer "Downtime | Current: {DTime} Previous: {previous}" """
+</drac2>
