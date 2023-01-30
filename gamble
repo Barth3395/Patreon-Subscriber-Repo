@@ -1,0 +1,29 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastDT",0))
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to do too much!" -f "Cooldown|This server has a cooldown on downtime activities! You can do this again at <t:{last_used+cooldown}:t>." -footer "To see or edit the cooldown, check the cooldown svar." """
+  else:
+   character().set_cvar("LastDT",int(time()))
+   a,pc=argparse(&ARGS&), character()
+   cost=%1%
+   adv = a.adv(boolwise=True)
+   reroll_number = pc.csettings.get("reroll", None)
+   minimum_check = a.last('mc', None, int) or (10 if pc.csettings.get("talent", False) else None)
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '')
+   dc=vroll("2d10+5")
+   check1 = vroll(pc.skills.insight.d20(adv, reroll_number, (minimum_check if pc.skills.insight.prof else None))+bonus)
+   check2=vroll(pc.skills.deception.d20(adv, reroll_number, (minimum_check if pc.skills.deception.prof else None))+bonus)
+   check3=vroll(pc.skills.intimidation.d20(adv, reroll_number, (minimum_check if pc.skills.intimidation.prof else None))+bonus)
+   s=0 
+   s += (1 if check1.total >= dc.total else 0)
+   s += (1 if check2.total >= dc.total else 0)
+   s += (1 if check3.total >= dc.total else 0)
+   workWeek = int(86400)
+   previous = DTime
+   pc.set_cvar("DTime", int(DTime) - workWeek)
+   gpmultiplier = int(get_svar("gpmultiplier",1)) 
+   amount=cost * 2 * gpmultiplier if s == 3 else cost + int(cost * .5) * gpmultiplier if s == 2 else int(-cost / 2) * gpmultiplier if s == 1 else -cost 
+   pc.coinpurse.modify_coins(gp=amount)
+   return f"""embed -title "{name} spends 1 day gambling!" -desc "Games of chance are a way to make a fortune—and perhaps a better way to lose one." -f "DC|{dc}" -f "Insight Check|{check1}" -f "Deception Check|{check2}" -f "Intimidation Check|{check3}" -f "Result|{s} {"Success" if s == 1 else "Successes"}, {["Lose all the money you bet, and accrue a debt equal to that amount.","Lose half the money you bet.","Gain the amount you bet plus half again more.","Gain double the amount you bet."][s]}" -f "Coins({"+" if amount >= 0 else ""}{amount})|{character().coinpurse.compact_str()}" -color <color> -thumb <image> -footer "Downtime | Current: {DTime} Previous: {previous} Multiplier: x{gpmultiplier}" """
+</drac2>
