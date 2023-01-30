@@ -1,0 +1,20 @@
+embed <drac2>
+ch,a,skill = character(),argparse(&ARGS&),'intelligence'
+adv,b = a.adv(boolwise=True),''.join(a.get('b', type_=lambda x: "+"+x if x[0] not in "+-" else x))
+dc = int(get_svar("levelupDC",0)) if get_svar("levelupDC") else 9+level
+timeused = int(get_svar("levelupTime", 0)) if get_svar("levelupTime") else int(1814400)
+intchk = vroll(ch.skills[skill].d20(adv)+f"{b if b else ''}")
+yes = intchk.total>=dc
+currTime = int(get('DTime',0))
+## commenting out but leaving in if we want to bring it back later if currTime<1814400: err("You do not have enough downtime days to attempt this!")
+ch.set_cvar('DTime',currTime-timeused)
+title  = f'''{name} attemps to level up!'''
+f1     = f'''Intelligence Check|**DC {dc}**\n{intchk}; {'Success!' if yes else 'Failure...'}'''
+f2     = f'''Result|{f"{name} levels up!" if yes else f"{name} remains at their current level..."}'''
+footer = f'''Current: {currTime-timeused} Previous: {currTime}\nMade by @'''+'KedarOthort#4389'
+</drac2>
+-title «<title>»
+-f «<f1>»
+-f «<f2>»
+-footer «<footer>»
+-thumb <image> -color <color>
