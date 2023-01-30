@@ -1,0 +1,24 @@
+<drac2>
+  cooldown = int(get_svar("cooldown",0)) 
+  last_used = int(get("LastDT",0))
+  if not last_used+cooldown < time():
+    return f"""embed -title "{name} tries to do too much!" -f "Cooldown|This server has a cooldown on downtime activities! You can do this again at <t:{last_used+cooldown}:t>." -footer "To see or edit the cooldown, check the cooldown svar." """
+  else:
+   character().set_cvar("LastDT",int(time()))
+   a,pc=argparse(&ARGS&), character()
+   rollstring = ["1d20", "2d20kh1", "2d20kl1"][a.adv()]
+   adv = a.adv(boolwise=True)
+   bonus = ("+"+a.join('b', '+', '') if a.get('b') else '')
+   dc=int("&1&")
+   amount=-50 if dc >= 21 else -40 if dc >= 18 else -40 if dc >= 13 else -15 if dc >= 5 else -10 if dc >= 1 else 0
+   tr=vroll(rollstring+f"+{wisdomMod}"+(f"+{proficiencyBonus*2} [expertise]" if "cook" in get("eTools","").lower() else f"+{proficiencyBonus} [proficient]"  if "cook" in get("pTools","").lower() else "")+bonus)
+   table={4:"Leftover Soup, A bowl of soup made old food. Make a DC 8 Con Save. On a Success, regain one spent hit dice.",5:"Rusty Sandwich, A sandwich made with Rust monster's nose. You gain the benefits of Iron Scent for 1 hour. Iron Scent. You can pinpoint, by scent, the location of ferrous metal within 30 feet of you.",13:"Giant Crab Leg, Boiled or grilled legs from a giant crab with a side of butter. Gain a swim speed of 20ft for 1 hour.",18:"Myconid Salad, A bunch of cut up mushrooms dressed with dressing. Gain the trait Sporey Rapport until there next long rest. Sporey Rapport. You can telepathically communicate with any creature within 30ft if they also have the Sporey Rapport trait.",21:"Blink Dog Jerky,  This meal may be eaten as an action. When eaten you are teleported 20ft in a random direction (including up or down). If the user is teleported into a wall, they take 1d6 force damage and are shoved into the closest unoccupied space."} 
+   result=[table[x] for x in table if dc >= x][-1]
+   s=0
+   s += (1 if tr.total >= dc else 0)
+   workWeek = int(86400)
+   previous = DTime
+   pc.set_cvar("DTime", int(DTime) - workWeek)
+   pc.coinpurse.modify_coins(gp=amount)
+   return f"""embed -title "{name} spends 1 day cooking!" -desc "Cooking can be used for making strange exotic meals using many of the strange plants and animals nearby." -f "Cooking Utensils|{tr}" -f "Attempted Meal|{result}" -f "Result|{["The cooking fails and you end up with a Leftover Soup! A bowl of soup made of old food. Make a DC 8 Con Save. On a Success, regain one spent hit dice.","You succeed in your cook! Gain the desired meal."][s]}" -f "Coins({"+" if amount >= 0 else ""}{amount})|{character().coinpurse.compact_str()}" -footer "Downtime | Current: {DTime} Previous: {previous}" """
+</drac2>
